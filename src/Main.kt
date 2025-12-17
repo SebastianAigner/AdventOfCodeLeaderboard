@@ -6,7 +6,7 @@ import java.io.*
 
 // ------------- Global parameters -------------
 
-const val AOC_YEAR = 2024
+const val AOC_YEAR = 2025
 const val JSON_FILES_MASK = "json/${AOC_YEAR}/*.json"
 
 val AOC_TZ = TimeZone.of("America/New_York")
@@ -59,8 +59,6 @@ data class Member(
     var localScore: Int,
     val name: String?,
     val id: Int,
-    @SerialName("global_score")
-    val globalScore: Int,
     val stars: Int,
     @SerialName("last_star_ts")
     val lastStarTs: Long,
@@ -87,9 +85,11 @@ data class MemberCompletion(val m: Member, val c: Completion)
 fun main() {
     // Collect all non-empty members from leaderboards
     val members = HashMap<String, Member>()
+    // Configure JSON to ignore unknown keys to be resilient to API changes (e.g., 'num_days')
+    val json = Json { ignoreUnknownKeys = true }
     for (file in files) {
         val text = file.readText()
-        val leaderboard = Json.decodeFromString<Leaderboard>(text)
+        val leaderboard = json.decodeFromString<Leaderboard>(text)
         members += leaderboard.members.filterValues { it.completionDayLevel.isNotEmpty() }
     }
     if (onlyMembers.isNotEmpty()) {
@@ -136,7 +136,7 @@ fun main() {
         val name = m.cleanName()
         nameLen = maxOf(nameLen, name.length)
         val localScore = m.localScore.toString()
-        val globalScore = m.globalScore.toString()
+        val globalScore = "0"
         scoreLen = maxOf(scoreLen, localScore.length, globalScore.length)
         for (d in daysRange) {
             for (l in 1..2) {
@@ -180,10 +180,10 @@ fun main() {
         print(m.localScore.toString().padStart(scoreLen + 1))
         print(" ")
         print(m.cleanName().padEnd(nameLen))
-        if (m.globalScore == 0) {
+        if (true) {
             print(" ".repeat(scoreLen + 2))
         } else {
-            print("[${m.globalScore.toString().padStart(scoreLen)}]")
+            //print("[${m.globalScore.toString().padStart(scoreLen)}]")
         }
         for (d in daysRange) {
             for (l in 1..2) {
